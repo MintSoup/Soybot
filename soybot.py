@@ -13,7 +13,7 @@ fnt = ImageFont.truetype("/usr/share/fonts/gnu-free/FreeMono.otf", fontsize)
 
 class MyClient(discord.Client):
 	async def on_ready(self):
-		self.files = [f[:-4] for f in listdir(None) if isfile(f) and f.endswith(".png")]
+		self.files = sorted([f[:-4] for f in listdir(None) if isfile(f) and f.endswith(".png")])
 		print("READY")
 
 	async def on_message(self, message: discord.Message):
