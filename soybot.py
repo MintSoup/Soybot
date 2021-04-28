@@ -40,6 +40,7 @@ class MyClient(discord.Client):
 			return
 
 		text = ""
+		replied = None
 		if message.reference is None:
 			async for msg in message.channel.history(limit=10):
 				if msg == message:
@@ -66,7 +67,10 @@ class MyClient(discord.Client):
 			''.join(random.choices(string.ascii_uppercase + string.digits, k=16)) + ".png"
 		img.save(filename)
 		f = open(filename, "rb")
-		await message.channel.send(file=discord.File(f, filename=wojak + ".png"))
+		if replied is None:
+			await message.channel.send(file=discord.File(f, filename=wojak + ".png"))
+		else:
+			await message.channel.send(file=discord.File(f, filename=wojak + ".png"), reference=replied)
 		await message.delete()
 		f.close()
 		remove(filename)
