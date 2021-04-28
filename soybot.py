@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import discord
 import textwrap
 import random
@@ -13,10 +14,11 @@ fnt = ImageFont.truetype("/usr/share/fonts/gnu-free/FreeMono.otf", fontsize)
 
 
 class MyClient(discord.Client):
+
 	async def on_ready(self):
 		self.files = sorted([f[:-4] for f in listdir(None)
 							 if isfile(f) and f.endswith(".png")])
-		print("READY")
+		print("Logged in and ready")
 
 	async def on_message(self, message: discord.Message):
 		if message.author == self.user:
@@ -39,13 +41,16 @@ class MyClient(discord.Client):
 
 		text = ""
 		if message.reference is None:
-			async for message in message.channel.history(limit=2):
-				text = message.clean_content
+			async for msg in message.channel.history(limit=10):
+				if msg == message:
+					continue
+				elif msg.author != self.user and msg.content != "":
+					text = msg.clean_content
+					break
 		else:
 			replied = await message.channel.fetch_message(message.reference.message_id)
 			text = replied.clean_content
 
-		print(text)
 		img = Image.open(wojak + ".png")
 		draw = ImageDraw.Draw(img)
 
@@ -62,6 +67,7 @@ class MyClient(discord.Client):
 		img.save(filename)
 		f = open(filename, "rb")
 		await message.channel.send(file=discord.File(f, filename=wojak + ".png"))
+		await message.delete()
 		f.close()
 		remove(filename)
 
