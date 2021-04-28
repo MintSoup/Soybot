@@ -11,16 +11,18 @@ from PIL import ImageDraw
 fontsize = 100
 fnt = ImageFont.truetype("/usr/share/fonts/gnu-free/FreeMono.otf", fontsize)
 
+
 class MyClient(discord.Client):
 	async def on_ready(self):
-		self.files = sorted([f[:-4] for f in listdir(None) if isfile(f) and f.endswith(".png")])
+		self.files = sorted([f[:-4] for f in listdir(None)
+							 if isfile(f) and f.endswith(".png")])
 		print("READY")
 
 	async def on_message(self, message: discord.Message):
 		if message.author == self.user:
 			return
 
-		if message.content == "wojaks?":
+		if message.clean_content == "wojaks?":
 			s = "```\n"
 			for f in self.files:
 				s += f + "\n"
@@ -28,10 +30,9 @@ class MyClient(discord.Client):
 			await message.channel.send(s)
 			return
 
-		if not message.content.startswith(">"):
+		if not message.clean_content.startswith(">"):
 			return
-
-		wojak = message.content[1:]
+		wojak = message.clean_content[1:]
 		if wojak not in self.files:
 			await message.channel.send("Wojak not found")
 			return
@@ -39,11 +40,12 @@ class MyClient(discord.Client):
 		text = ""
 		if message.reference is None:
 			async for message in message.channel.history(limit=2):
-				text = message.content
+				text = message.clean_content
 		else:
 			replied = await message.channel.fetch_message(message.reference.message_id)
-			text = replied.content
+			text = replied.clean_content
 
+		print(text)
 		img = Image.open(wojak + ".png")
 		draw = ImageDraw.Draw(img)
 
@@ -55,7 +57,8 @@ class MyClient(discord.Client):
 			draw.text((img.width * 0.69 - w / 2, img.height / 2 - toffset + offset), line, 0, font=fnt)
 			offset += fontsize
 
-		filename = "/tmp/" + ''.join(random.choices(string.ascii_uppercase + string.digits, k = 16)) + ".png"
+		filename = "/tmp/" + \
+			''.join(random.choices(string.ascii_uppercase + string.digits, k=16)) + ".png"
 		img.save(filename)
 		f = open(filename, "rb")
 		await message.channel.send(file=discord.File(f, filename=wojak + ".png"))
