@@ -16,41 +16,15 @@ fnt = ImageFont.truetype("/usr/share/fonts/gnu-free/FreeMono.otf", fontsize)
 class MyClient(discord.Client):
 
 	async def on_ready(self):
-		self.files = sorted([f[:-4] for f in listdir(None)
-							 if isfile(f) and f.endswith(".png")])
 		print("Logged in and ready")
 
-	async def on_message(self, message: discord.Message):
-		if message.author == self.user:
-			return
+	def getfiles(self):
+		return sorted([f[:-4] for f in listdir(None) if isfile(f) and f.endswith(".png")])
 
-		if message.clean_content == "wojaks?":
-			s = "```\n"
-			for f in self.files:
-				s += f + "\n"
-			s += "```"
-			await message.channel.send(s)
-			return
-
-		if not message.clean_content.startswith(">"):
-			return
-		wojak = message.clean_content[1:]
-		if wojak not in self.files:
+	async def soy(self, wojak, text, message, ref):
+		if not wojak in self.getfiles():
 			await message.channel.send("Wojak not found")
 			return
-
-		text = ""
-		replied = None
-		if message.reference is None:
-			async for msg in message.channel.history(limit=10):
-				if msg == message:
-					continue
-				elif msg.author != self.user and msg.content != "":
-					text = msg.clean_content
-					break
-		else:
-			replied = await message.channel.fetch_message(message.reference.message_id)
-			text = replied.clean_content
 
 		img = Image.open(wojak + ".png")
 		draw = ImageDraw.Draw(img)
@@ -67,17 +41,53 @@ class MyClient(discord.Client):
 			''.join(random.choices(string.ascii_uppercase + string.digits, k=16)) + ".png"
 		img.save(filename)
 		f = open(filename, "rb")
-		if replied is None:
+
+		if ref is None:
 			await message.channel.send(file=discord.File(f, filename=wojak + ".png"))
 		else:
-			await message.channel.send(file=discord.File(f, filename=wojak + ".png"), reference=replied)
-		await message.delete()
-		f.close()
-		remove(filename)
+			await message.channel.send(file=discord.File(f, filename=wojak + ".png"), reference=ref)
+			f.close()
+			remove(filename)
 
+
+
+	async def on_message(self, message: discord.Message):
+		if message.author == self.user:
+			return
+
+		if message.clean_content == "wojaks?":
+			s = "```\n"
+			for f in self.getfiles():
+				s += f + "\n"
+				s += "```"
+				await message.channel.send(s)
+			return
+
+		if not message.content.startswith(">"):
+			return
+
+
+		wojak = message.content[1:].split(" ")[0]
+
+		text = ""
+		replied = None
+
+		if " " in message.content:
+			text = message.clean_content[1 + len(wojak):]
+		elif message.reference is None:
+			async for msg in message.channel.history(limit=10):
+				if msg == message:
+					continue
+				elif msg.author != self.user and msg.content != "":
+					text = msg.clean_content
+					break
+		else:
+			replied = await message.channel.fetch_message(message.reference.message_id)
+			text = replied.clean_content
+
+		await self.soy(wojak, text, message, replied)
 
 client = MyClient()
-
 f = open("token", "r")
 token = f.read()
 f.close()
