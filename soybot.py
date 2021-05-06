@@ -52,15 +52,17 @@ class MyClient(discord.Client):
 
 
 	async def on_message(self, message: discord.Message):
+
 		if message.author == self.user:
 			return
 
-		if message.clean_content == "wojaks?":
+		if message.clean_content == ">?":
 			s = "```\n"
 			for f in self.getfiles():
 				s += f + "\n"
-				s += "```"
-				await message.channel.send(s)
+				print(s)
+			s += "```"
+			await message.channel.send(s)
 			return
 
 		if not message.content.startswith(">"):
