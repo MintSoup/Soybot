@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import discord
 import textwrap
 import random
@@ -38,7 +37,6 @@ class MyClient(discord.Client):
 
 	async def soy(self, wojak, text, message, ref):
 		if not wojak in self.getfiles():
-			await message.channel.send("Wojak not found")
 			return
 
 		img = Image.open(wojak + ".png")
