@@ -84,9 +84,8 @@ class MyClient(discord.Client):
 			s = "```\n"
 			for f in self.getfiles():
 				s += f + "\n"
-				print(s)
-				s += "```"
-				await message.channel.send(s)
+			s += "```"
+			await message.channel.send(s)
 			return
 
 		if not message.content.startswith(">"):
