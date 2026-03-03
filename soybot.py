@@ -73,8 +73,8 @@ class MyClient(discord.Client):
 			await message.channel.send(
 				file=discord.File(f, filename=wojak + ".png"), reference=ref
 			)
-			f.close()
-			remove(filename)
+		f.close()
+		remove(filename)
 
 	async def on_message(self, message: discord.Message):
 		if message.author == self.user:
